@@ -53,6 +53,10 @@ class P12Article {
     getTitle() {
         return this.title;
     }
+
+    getUrl() {
+        return this.url;
+    }
 }
 
 class ExtractionTemplate {
@@ -65,7 +69,7 @@ class ExtractionTemplate {
 
 class Scraper {
     async scrap(template, cant = 1) {
-        let url = template.url;
+        let url = template.base_url;
         let browser = await puppeteer.launch();
         let page = await browser.newPage();
         await page.goto(url, { waitUntil: 'networkidle2' });
@@ -87,18 +91,46 @@ class Scraper {
     }
 }
 
-let template = { url: 'https://www.pagina12.com.ar', selector: 'article', domainClass: P12Article };
+function returnValid(article, articles) {
+    let ok = true;
+    articles.forEach(art => {
+        if (art.url === article.url) {
+            ok = false;
+        }
+    });
+    return ok;
+}
+async function processedData(newArticles) {
+    newArticles.forEach(article => article.extractDate = new Date());
+    console.log(newArticles);
+    let currentArticlesString = null;
+    try {
+        currentArticlesString = await fs.readFileSync('P12Articles.json').toString('utf8');
+    } catch (e) {
+        console.log("Error writing file: " + e);
+    }
+
+    let currentArticles = currentArticlesString ? Array.prototype.slice.call(JSON.parse(currentArticlesString)) : [];
+    newArticles = newArticles.filter(article => returnValid(article, currentArticles));
+    console.log("Nuevos articulos: ", newArticles);
+    newArticles.forEach(art => currentArticles.push(art));
+    return currentArticles;
+}
+
+let template = new ExtractionTemplate({ url: 'https://www.pagina12.com.ar', selector: 'article', domainClass: P12Article });
 let scraper = new Scraper(template);
 scraper.scrap(template, 5).then(async(articles) => {
     try {
+        console.log("New articles");
         for (let article of articles) {
             console.log(article.getTitle());
             console.log(article.getDate());
             console.log("------------------------------------------------------");
         }
-        let data = JSON.stringify(articles);
-        await fs.writeFileSync('P12Articles.json', data);
-        console.log("Finished. Processed: " + articles.length);
+        let data = await processedData(articles);
+        let dataString = JSON.stringify(data);
+        await fs.writeFileSync('P12Articles.json', dataString);
+        console.log("Finished. Processed");
     } catch (e) {
         console.log("Error writing file: " + e);
     }
