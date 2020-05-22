@@ -1,0 +1,14 @@
+{
+    "name": "clase-5",
+    "version": "1.0.0",
+    "description": "e-commerce",
+    "main": "index.js",
+    "scripts": {
+        "test": "jest"
+    },
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "jest": "^26.0.1"
+    }
+}
