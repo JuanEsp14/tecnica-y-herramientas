@@ -1,0 +1,14 @@
+{
+  "name": "ejercicio-4",
+  "version": "1.0.0",
+  "description": "Ejercicio para realizar test sobre las clases de Viajero frecuente",
+  "main": "app.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "Juan Espinoza",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^26.0.1"
+  }
+}
